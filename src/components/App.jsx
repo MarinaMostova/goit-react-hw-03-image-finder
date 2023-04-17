@@ -6,16 +6,48 @@ import ImageGallery from './ImageGallery';
 import Loader from './Loader';
 import Button from './Button';
 import fetchImages from 'servises/fetch-images';
+import Modal from './Modal';
 import './App.css';
-
-let page = 1;
 
 class App extends Component {
   state = {
+    page: 1,
     searchQuery: '',
     images: [],
     totalHits: 0,
     isLoading: false,
+    error: '',
+    showModal: false,
+    imageInfo: { largeImage: '', tags: '' },
+  };
+
+  componentDidUpdate(_, prevState) {
+    if (
+      prevState.page !== this.state.page ||
+      prevState.searchQuery !== this.state.searchQuery
+    ) {
+      this.getImages(this.state.searchQuery, this.state.page);
+    }
+  }
+
+  getImages = async (searchQuery, page) => {
+    this.setState({ isLoading: true });
+    try {
+      const data = await fetchImages(searchQuery, page);
+      if (data.hits.length === 0) {
+        return toast(
+          ' 🤷‍♂️ Sorry, there are no images matching your search query. Please try again.'
+        );
+      }
+      this.setState(prevState => ({
+        images: [...prevState.images, ...data.hits],
+        totalHits: data.totalHits,
+      }));
+    } catch (error) {
+      this.setState({ error });
+    } finally {
+      this.setState({ isLoading: false });
+    }
   };
 
   handleSubmit = inputData => {
@@ -25,56 +57,53 @@ class App extends Component {
       toast('🔍 What are you looking for?');
       return;
     } else {
-      this.setState({ searchQuery, images: [], totalHits: 0, isLoading: true });
+      this.setState({
+        searchQuery,
+        images: [],
+        page: 1,
+      });
     }
-
-    page = 1;
-
-    fetchImages(searchQuery, page)
-      .then(({ hits, totalHits }) => {
-        if (totalHits === 0) {
-          toast(
-            ' 🤷‍♂️ Sorry, there are no images matching your search query. Please try again.'
-          );
-          return;
-        }
-        this.setState({ totalHits, images: hits });
-      })
-      .catch(error => console.log(error))
-      .finally(() =>
-        this.setState(({ isLoading }) => ({ isLoading: !isLoading }))
-      );
   };
 
   onClickButton = () => {
-    this.setState(({ isLoading }) => ({ isLoading: !isLoading }));
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
+  };
 
-    fetchImages(this.state.searchQuery, (page += 1))
-      .then(({ hits }) => {
-        this.setState(({ images }) => ({
-          images: [...images, ...hits],
-        }));
-      })
-      .catch(error => console.log(error))
-      .finally(() =>
-        this.setState(({ isLoading }) => ({ isLoading: !isLoading }))
-      );
+  openModal = (largeImage, tags) => {
+    this.setState({ showModal: true, imageInfo: { largeImage, tags } });
+  };
+
+  closeModal = () => {
+    this.setState({
+      showModal: false,
+      imageInfo: { largeImage: '', tags: '' },
+    });
   };
 
   render() {
-    const { images, totalHits, isLoading } = this.state;
-    const allPages = totalHits / 12;
+    const { images, totalHits, isLoading, error, showModal, imageInfo } =
+      this.state;
+
+    const allPages = totalHits / images.length;
     return (
       <div className="app">
         <Searchbar onSubmit={this.handleSubmit} />
 
-        {images && <ImageGallery images={images} />}
+        {images.length > 0 && (
+          <ImageGallery images={images} openModal={this.openModal} />
+        )}
 
-        {totalHits > 12 && allPages > page && !isLoading && (
+        {allPages > 1 && !isLoading && images.length > 0 && (
           <Button onClick={this.onClickButton} />
         )}
 
         {isLoading && <Loader />}
+
+        {error && <p>UPS! Something wrong! Please try again</p>}
+
+        {showModal && <Modal onClose={this.closeModal} image={imageInfo} />}
 
         <ToastContainer autoClose={3000} />
       </div>
