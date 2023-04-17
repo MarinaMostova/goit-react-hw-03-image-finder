@@ -101,7 +101,7 @@ class App extends Component {
 
         {isLoading && <Loader />}
 
-        {error && <p>UPS! Something wrong! Please try again</p>}
+        {error && <p>Oops! Something went wrong! Please try again</p>}
 
         {showModal && <Modal onClose={this.closeModal} image={imageInfo} />}
 
