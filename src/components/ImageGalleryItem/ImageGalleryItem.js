@@ -8,6 +8,7 @@ const ImageGalleryItem = ({ largeImageURL, tags, webformatURL, openModal }) => {
     </li>
   );
 };
+
 ImageGalleryItem.propTypes = {
   openModal: PropTypes.func.isRequired,
   webformatURL: PropTypes.string.isRequired,
