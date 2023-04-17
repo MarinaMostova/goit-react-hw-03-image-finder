@@ -22,7 +22,7 @@ class App extends Component {
     const searchQuery = inputData.toLowerCase().trim();
 
     if (searchQuery === '') {
-      toast('What you are looking for?');
+      toast('🔍 What are you looking for?');
       return;
     } else {
       this.setState({ searchQuery, images: [], totalHits: 0, isLoading: true });
@@ -34,7 +34,7 @@ class App extends Component {
       .then(({ hits, totalHits }) => {
         if (totalHits === 0) {
           toast(
-            'Sorry, there are no images matching your search query. Please try again.'
+            ' 🤷‍♂️ Sorry, there are no images matching your search query. Please try again.'
           );
           return;
         }
