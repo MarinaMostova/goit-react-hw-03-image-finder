@@ -5,7 +5,7 @@ import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
 import Loader from './Loader';
 import Button from './Button';
-import fetchImages from 'servises/fetch-images';
+import fetchImages from 'services/fetch-images';
 import Modal from './Modal';
 import './App.css';
 
